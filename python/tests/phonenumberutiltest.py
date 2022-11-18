@@ -40,6 +40,7 @@ AR_NUMBER = FrozenPhoneNumber(country_code=54, national_number=1187654321)
 AU_NUMBER = FrozenPhoneNumber(country_code=61, national_number=236618300)
 BS_MOBILE = FrozenPhoneNumber(country_code=1, national_number=2423570000)
 BS_NUMBER = FrozenPhoneNumber(country_code=1, national_number=2423651234)
+CO_FIXED_LINE = FrozenPhoneNumber(country_code=57, national_number=6012345678)
 # Note that this is the same as the example number for DE in the metadata.
 DE_NUMBER = FrozenPhoneNumber(country_code=49, national_number=30123456)
 DE_SHORT_NUMBER = FrozenPhoneNumber(country_code=49, national_number=1234)
@@ -139,7 +140,7 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
         self.assertEqual("US", metadata.id)
         self.assertEqual(1, metadata.country_code)
         self.assertEqual("011", metadata.international_prefix)
-        self.assertTrue(metadata.national_prefix is not None)
+        self.assertIsNotNone(metadata.national_prefix)
         self.assertEqual(2, len(metadata.number_format))
         self.assertEqual("(\\d{3})(\\d{3})(\\d{4})", metadata.number_format[1].pattern)
         self.assertEqual("\\1 \\2 \\3", metadata.number_format[1].format)
@@ -324,26 +325,26 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
         # Should return the same response if asked for FIXED_LINE_OR_MOBILE too.
         self.assertEqual(DE_NUMBER,
                          phonenumbers.example_number_for_type("DE", PhoneNumberType.FIXED_LINE_OR_MOBILE))
-        self.assertTrue(phonenumbers.example_number_for_type("US", PhoneNumberType.FIXED_LINE) is not None)
-        self.assertTrue(phonenumbers.example_number_for_type("US", PhoneNumberType.MOBILE) is not None)
+        self.assertIsNotNone(phonenumbers.example_number_for_type("US", PhoneNumberType.FIXED_LINE))
+        self.assertIsNotNone(phonenumbers.example_number_for_type("US", PhoneNumberType.MOBILE))
         # We have data for the US, but no data for VOICEMAIL, so return null.
-        self.assertTrue(phonenumbers.example_number_for_type("US", PhoneNumberType.VOICEMAIL) is None)
+        self.assertIsNone(phonenumbers.example_number_for_type("US", PhoneNumberType.VOICEMAIL))
         # CS is an invalid region, so we have no data for it.
-        self.assertTrue(phonenumbers.example_number_for_type("CS", PhoneNumberType.MOBILE) is None)
+        self.assertIsNone(phonenumbers.example_number_for_type("CS", PhoneNumberType.MOBILE))
         # Python version extra test
-        self.assertTrue(phonenumbers.example_number_for_type("US", PhoneNumberType.UNKNOWN) is None)
+        self.assertIsNone(phonenumbers.example_number_for_type("US", PhoneNumberType.UNKNOWN))
 
         # RegionCode 001 is reserved for supporting non-geographical country
         # calling code. We don't support getting an example number for it with
         # this method.
-        self.assertTrue(phonenumbers.example_number("001") is None)
+        self.assertIsNone(phonenumbers.example_number("001"))
 
     def testGetInvalidExampleNumber(self):
         # RegionCode 001 is reserved for supporting non-geographical country
         # calling codes. We don't support getting an invalid example number
         # for it with invalid_example_number.
-        self.assertTrue(phonenumbers.invalid_example_number("001") is None)
-        self.assertTrue(phonenumbers.invalid_example_number("CS") is None)
+        self.assertIsNone(phonenumbers.invalid_example_number("001"))
+        self.assertIsNone(phonenumbers.invalid_example_number("CS"))
         usInvalidNumber = phonenumbers.invalid_example_number("US")
         self.assertEqual(1, usInvalidNumber.country_code)
         self.assertFalse(usInvalidNumber.national_number == 0)
@@ -352,18 +353,18 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
         self.assertEqual(INTERNATIONAL_TOLL_FREE, phonenumbers.example_number_for_non_geo_entity(800))
         self.assertEqual(UNIVERSAL_PREMIUM_RATE, phonenumbers.example_number_for_non_geo_entity(979))
         # Python version extra test
-        self.assertTrue(phonenumbers.example_number_for_non_geo_entity(666) is None)
+        self.assertIsNone(phonenumbers.example_number_for_non_geo_entity(666))
 
     def testGetExampleNumberWithoutRegion(self):
         # In our test metadata we don't cover all types: in our real metadata, we do.
-        self.assertTrue(phonenumbers.example_number_for_type(None, PhoneNumberType.FIXED_LINE) is not None)
-        self.assertTrue(phonenumbers.example_number_for_type(None, PhoneNumberType.MOBILE) is not None)
-        self.assertTrue(phonenumbers.example_number_for_type(None, PhoneNumberType.PREMIUM_RATE) is not None)
+        self.assertIsNotNone(phonenumbers.example_number_for_type(None, PhoneNumberType.FIXED_LINE))
+        self.assertIsNotNone(phonenumbers.example_number_for_type(None, PhoneNumberType.MOBILE))
+        self.assertIsNotNone(phonenumbers.example_number_for_type(None, PhoneNumberType.PREMIUM_RATE))
         # Python version extra test: temporarily drop SUPPORTED_REGIONS to check
         # that example_number_for_type() falls back to non-geo numbers.
         saved = phonenumberutil.SUPPORTED_REGIONS
         phonenumberutil.SUPPORTED_REGIONS = set()
-        self.assertTrue(phonenumbers.example_number_for_type(None, PhoneNumberType.TOLL_FREE) is not None)
+        self.assertIsNotNone(phonenumbers.example_number_for_type(None, PhoneNumberType.TOLL_FREE))
         phonenumberutil.SUPPORTED_REGIONS = saved
 
     def testConvertAlphaCharactersInNumber(self):
@@ -745,6 +746,8 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
     def testFormatNumberForMobileDialing(self):
         # Numbers are normally dialed in national format in-country, and
         # international format from outside the country.
+        self.assertEqual("6012345678",
+                         phonenumbers.format_number_for_mobile_dialing(CO_FIXED_LINE, "CO", False))
         self.assertEqual("030123456",
                          phonenumbers.format_number_for_mobile_dialing(DE_NUMBER, "DE", False))
         self.assertEqual("+4930123456",
@@ -1285,7 +1288,7 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
         self.assertEqual(None, phonenumbers.ndd_prefix_for_region("CS", False))
         # Python version extra test
         # IT has no national prefix
-        self.assertTrue(phonenumbers.ndd_prefix_for_region("IT", False) is None)
+        self.assertIsNone(phonenumbers.ndd_prefix_for_region("IT", False))
 
     def testIsNANPACountry(self):
         self.assertTrue(phonenumbers.is_nanpa_country("US"))
@@ -2977,6 +2980,21 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
         # Python version extra test: check with bogus region
         self.assertFalse(phonenumbers.is_mobile_number_portable_region("XY"))
 
+    def testGetMetadataForRegionForNonGeoEntity_shouldBeNull(self):
+        self.assertIsNone(PhoneMetadata.metadata_for_region("001"))
+
+    def testGetMetadataForRegionForUnknownRegion_shouldBeNull(self):
+        self.assertIsNone(PhoneMetadata.metadata_for_region("ZZ"))
+
+    def testGetMetadataForNonGeographicalRegionForGeoRegion_shouldBeNull(self):
+        self.assertIsNone(PhoneMetadata.metadata_for_nongeo_region(country_code=1))
+
+    def testGetMetadataForRegionForMissingMetadata(self):
+        self.assertIsNone(PhoneMetadata.metadata_for_region("YYZ"))
+
+    def testGetMetadataForNonGeographicalRegionForMissingMetadata(self):
+        self.assertIsNone(PhoneMetadata.metadata_for_nongeo_region("800000"))
+
     def testMetadataEquality(self):
         # Python version extra tests for equality against other types
         desc1 = PhoneNumberDesc(national_number_pattern="\\d{4,8}")
@@ -3169,7 +3187,7 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
         self.assertRaises(Exception, PhoneMetadata, *("XY",),
                           **{'preferred_international_prefix': u('9999'),
                              'register': True})
-        self.assertTrue(phonenumbers.example_number_for_type('XY', PhoneNumberType.PERSONAL_NUMBER) is None)
+        self.assertIsNone(phonenumbers.example_number_for_type('XY', PhoneNumberType.PERSONAL_NUMBER))
 
     def testShortMetadataRegister(self):
         # Python version extra tests for short metadata registration.
@@ -3195,7 +3213,7 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
                           **{'preferred_international_prefix': u('9999'),
                              'register': True,
                              'short_data': True})
-        self.assertTrue(phonenumbers.example_number_for_type('XZ', PhoneNumberType.PERSONAL_NUMBER) is None)
+        self.assertIsNone(phonenumbers.example_number_for_type('XZ', PhoneNumberType.PERSONAL_NUMBER))
 
     def testNonGeoMetadataRegister(self):
         # Python version extra tests for non-geo metadata registration.
@@ -3265,7 +3283,7 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
 
     def testCoverage(self):
         # Python version extra tests
-        self.assertTrue(phonenumberutil._region_code_for_number_from_list(GB_NUMBER, ("XX",)) is None)
+        self.assertIsNone(phonenumberutil._region_code_for_number_from_list(GB_NUMBER, ("XX",)))
         self.assertEqual((0, "abcdef"),
                          phonenumberutil._extract_country_code("abcdef"))
         metadata = PhoneMetadata.metadata_for_region("AU")
@@ -3296,7 +3314,7 @@ class PhoneNumberUtilTest(TestMetadataTestCase):
         saved_mobile = metadata800.mobile
         metadata800._mutable = True
         metadata800.mobile = PhoneNumberDesc(example_number='')
-        self.assertTrue(phonenumbers.example_number_for_non_geo_entity(800) is not None)
+        self.assertIsNotNone(phonenumbers.example_number_for_non_geo_entity(800))
         metadata800.mobile = saved_mobile
         metadata800._mutable = False
 
