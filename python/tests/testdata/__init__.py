@@ -1,5 +1,5 @@
 """Auto-generated file, do not edit by hand."""
-# Copyright (C) 2010-2022 The Libphonenumber Authors
+# Copyright (C) 2010-2023 The Libphonenumber Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 
 from phonenumbers.phonemetadata import PhoneMetadata
 
-_AVAILABLE_REGION_CODES = ['AD','AE','AM','AO','AR','AU','BB','BR','BS','BY','CA','CC','CN','CX','DE','FR','GB','GG','IT','JP','KR','MX','NZ','PL','RE','RU','SE','SG','TA','US','UZ','YT']
+_AVAILABLE_REGION_CODES = ['AD','AE','AM','AO','AR','AU','BB','BR','BS','BY','CA','CC','CN','CO','CX','DE','FR','GB','GG','IT','JP','KR','MX','NZ','PL','RE','RU','SE','SG','TA','US','UZ','YT']
 _AVAILABLE_NONGEO_COUNTRY_CODES = [800, 882, 979]
 
 def _load_region(code):
@@ -47,6 +47,7 @@ _COUNTRY_CODE_TO_REGION_CODE = {
     52: ("MX",),
     54: ("AR",),
     55: ("BR",),
+    57: ("CO",),
     61: ("AU", "CC", "CX",),
     64: ("NZ",),
     65: ("SG",),
