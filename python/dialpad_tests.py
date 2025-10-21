@@ -25,7 +25,7 @@ valid_strings = ['+442083661177',
                  '+17282011957', # https://dialpad.atlassian.net/browse/TEL-21287
                  '+17302559291',  # https://dialpad.atlassian.net/browse/TEL-23411
                  '+18212219050', # https://dialpad.atlassian.net/browse/DP-151149
-                 '+816012341111', # https://dialpad.atlassian.net/browse/TEL-25836
+                 '+816012345678', # https://dialpad.atlassian.net/browse/TEL-25836
                  ]
 
 print ('######### - VALID BY LIBRARY - ################')
