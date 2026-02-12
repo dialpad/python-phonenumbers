@@ -68,7 +68,8 @@ jobs:
       - name: Run Dialpad tests
         if: steps.version_check.outputs.sync_needed == 'true'
         run: |
-          pytest python/dialpad_tests.py
+          pip install protobuf pytest
+          python -m pytest python/dialpad_tests.py
       
       # - name: Build and publish package
       #   if: steps.version_check.outputs.sync_needed == 'true'
