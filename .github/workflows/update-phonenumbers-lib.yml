@@ -72,7 +72,7 @@ jobs:
       
       - name: Build and publish package
         if: steps.version_check.outputs.sync_needed == 'true'
-        uses: dialpad/github-actions/python-package-publish@fst-20251215
+        uses: dialpad/github-actions/python-package-publish@main
         with:
           path: 'python' # Required
           repository: 'https://us-python.pkg.dev/dp-artifacts-sandbox/python-packages-sandbox' # Required
