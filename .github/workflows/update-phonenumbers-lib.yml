@@ -29,6 +29,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/394529523748/locations/global/workloadIdentityPools/gha-worker/providers/github-actions'
+          service_account: 'gha-worker@dp-artifacts-sandbox.iam.gserviceaccount.com'
+
       - name: Version Comparison (Upstream vs Artifact Registry)
         id: version_check
         run: |
@@ -69,7 +75,7 @@ jobs:
         if: steps.version_check.outputs.sync_needed == 'true'
         run: |
           pip install protobuf pytest
-          python -m pytest python/dialpad_tests.py
+          python python/dialpad_tests.py
       
       # - name: Build and publish package
       #   if: steps.version_check.outputs.sync_needed == 'true'
