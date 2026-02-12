@@ -1,0 +1,28 @@
+[project]
+name = "dialpad-phonenumbers"
+dynamic = ["version"]
+description = "Dialpad's fork of python-phonenumbers"
+requires-python = ">=3.8"
+maintainers = [
+  {name = "Dialpad Carrier Team", email = "carrier-eng@dialpad.com"},
+]
+
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# Tells setuptools that the root of the 'phonenumbers' package is inside the current dir
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+# Ensures it finds the 'phonenumbers' directory sitting right next to the .toml
+where = ["."] 
+include = ["phonenumbers*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "phonenumbers.__version__"}
+
+[tool.setuptools.package-data]
+"*" = ["*.pyi", "py.typed"]

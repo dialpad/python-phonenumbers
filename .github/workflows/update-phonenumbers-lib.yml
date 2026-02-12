@@ -1,0 +1,162 @@
+name: 'Update Phonenumbers Library'
+
+on:
+  push:
+    branches:
+      - tel-18111-automate-phonenumbers-lib
+  # schedule:
+  #   - cron: '5 0 * * 3' # Runs at 00:05 (midnight) every Wednesday (3)
+  workflow_dispatch: # Manual trigger
+
+
+jobs:
+  sync-with-upstream:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    # env:
+    #   DEPLOYER_EMAIL_ARG: ''
+    steps:
+      - name: Checkout Dialpad Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Version Comparison (Upstream vs Artifact Registry)
+        id: version_check
+        run: |
+          # 1. Get Upstream Version
+          UPSTREAM_VERSION=$(curl -s https://raw.githubusercontent.com/daviddrysdale/python-phonenumbers/dev/python/phonenumbers/__init__.py | grep "__version__ =" | cut -d'"' -f2)
+          
+          if [ -z "$UPSTREAM_VERSION" ]; then
+            echo "Error: Could not fetch upstream version. Check branch name or URL."
+            exit 1
+          fi
+
+          # 2. Get Dialpad Artifact Registry Version
+          REGISTRY_VERSION=$(gcloud artifacts versions list \
+            --package=dialpad-phonenumbers \
+            --repository=python-packages-sandbox \
+            --location=us-central1 \
+            --format='value(name)' \
+            --sort-by='~create_time' | head -n 1 | awk -F/ '{print $NF}' | cut -d. -f1-3)
+
+          if [ -z "$REGISTRY_VERSION" ]; then
+            echo "No existing artifacts found in registry. Defaulting to 0.0.0 for first-time setup."
+            REGISTRY_VERSION="0.0.0"
+          fi
+
+          echo "Upstream (dev branch): $UPSTREAM_VERSION"
+          echo "Registry (Dialpad): $REGISTRY_VERSION"
+
+          # 3. Decision Logic
+          if [ "$UPSTREAM_VERSION" == "$REGISTRY_VERSION" ]; then
+            echo "sync_needed=false" >> $GITHUB_OUTPUT
+            echo "Versions match. No sync required."
+          else
+            echo "sync_needed=true" >> $GITHUB_OUTPUT
+            echo "New version $UPSTREAM_VERSION detected or registry is empty. Starting update."
+          fi
+        
+      - name: Run Dialpad tests
+        if: steps.version_check.outputs.sync_needed == 'true'
+        run: |
+          pytest python/dialpad_tests.py
+      
+      - name: Build and publish package
+        if: steps.version_check.outputs.sync_needed == 'true'
+        uses: dialpad/github-actions/python-package-publish@fst-20251215
+        with:
+          path: 'python' # Required
+          repository: 'https://us-python.pkg.dev/dp-artifacts-sandbox/python-packages-sandbox' # Required
+          workload_identity_provider: 'projects/394529523748/locations/global/workloadIdentityPools/gha-worker/providers/github-actions'
+          service_account: 'gha-worker@dp-artifacts-sandbox.iam.gserviceaccount.com'
+
+  #     - name: Sync Dev with Upstream
+  #       run: |
+  #         git remote add upstream https://github.com/daviddrysdale/python-phonenumbers
+  #         git fetch upstream dev
+  #         git checkout dev
+  #         git merge upstream/dev
+  #         git push origin dev
+
+  #     - name: Create New Branch from Latest FST
+  #       id: branch_logic
+  #       run: |
+  #         # Find the newest fst branch
+  #         PREV_BRANCH=$(git branch -r | grep 'origin/fst-' | sort -r | head -n 1 | sed 's/origin\///' | xargs)
+  #         NEW_BRANCH="fst-$(date +'%Y%m%d')"
+          
+  #         git checkout $PREV_BRANCH
+  #         git checkout -b $NEW_BRANCH
+          
+  #         # This is where conflicts would happen
+  #         git rebase dev
+          
+  #         echo "branch_name=$NEW_BRANCH" >> $GITHUB_OUTPUT
+  #         echo "prev_branch=$PREV_BRANCH" >> $GITHUB_OUTPUT
+
+  #     - name: Run Dialpad Tests
+  #       run: |
+  #         pip install protobuf pytest
+  #         python python/dialpad_tests.py
+
+  #     - name: Archive and Upload to GitHub Artifacts
+  #       if: success()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         # Name of the zip file that will appear in the UI
+  #         name: phonenumbers-package-${{ steps.branch_logic.outputs.branch_name }}
+          
+  #         # Path to the files you want to include in the zip
+  #         # Using '.' zips the entire repository at the current state
+  #         path: .
+
+  # notify-update-result:
+  #   name: 'Notify update result'
+  #   runs-on: ubuntu-latest
+  #   needs: [sync-with-upstream]
+  #   if: always()
+  #   steps:
+  #     - name: Determine update result
+  #       id: update-result
+  #       run: |
+  #         UPDATE_RESULT="${{ needs.sync-with-upstream.result }}"
+
+  #         echo "Update result: $UPDATE_RESULT"
+
+  #         # Check if any update failed
+  #         if [[ "$UPDATE_RESULT" == "failure" ]]; then
+  #           echo "update_status=failure" >> $GITHUB_OUTPUT
+  #           echo "Update failed"
+  #         # Success only if at least one succeeded AND none failed
+  #         elif [[ ("$UPDATE_RESULT" == "success") ]]; then
+  #           echo "update_status=success" >> $GITHUB_OUTPUT
+  #           echo "Update succeeded"
+  #         else
+  #           echo "update_status=skipped" >> $GITHUB_OUTPUT
+  #           echo "Update was skipped"
+  #         fi
+
+  #     - name: Send successful report
+  #       if: steps.update-result.outputs.update_status == 'success'
+  #       uses: dialpad/dp-send-sms@e27e1c6927d0f5c21fb5abf10cdfbf9354b2705f # v2
+  #       with:
+  #         api-key: ${{ secrets.ENGBOT_DIALPAD_API_TOKEN }} # organization secret
+  #         text: 'Update of phonenumbers library was successful ✅'
+  #         sender-id: '5517141663055872' # this user id corresponds to the Eng Bot user
+
+  #     - name: Send failure report
+  #       if: steps.update-result.outputs.update_status == 'failure'
+  #       uses: dialpad/dp-send-sms@e27e1c6927d0f5c21fb5abf10cdfbf9354b2705f # v2
+  #       with:
+  #         api-key: ${{ secrets.ENGBOT_DIALPAD_API_TOKEN }} # organization secret
+  #         text: 'Error updating phonenumbers library ❌. Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  #         sender-id: '5517141663055872' # this user id corresponds to the Eng Bot user
