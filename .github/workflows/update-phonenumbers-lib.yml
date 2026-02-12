@@ -70,14 +70,14 @@ jobs:
         run: |
           pytest python/dialpad_tests.py
       
-      - name: Build and publish package
-        if: steps.version_check.outputs.sync_needed == 'true'
-        uses: dialpad/github-actions/python-package-publish@main
-        with:
-          path: 'python' # Required
-          repository: 'https://us-python.pkg.dev/dp-artifacts-sandbox/python-packages-sandbox' # Required
-          workload_identity_provider: 'projects/394529523748/locations/global/workloadIdentityPools/gha-worker/providers/github-actions'
-          service_account: 'gha-worker@dp-artifacts-sandbox.iam.gserviceaccount.com'
+      # - name: Build and publish package
+      #   if: steps.version_check.outputs.sync_needed == 'true'
+      #   uses: dialpad/github-actions/python-package-publish@main
+      #   with:
+      #     path: 'python' # Required
+      #     repository: 'https://us-python.pkg.dev/dp-artifacts-sandbox/python-packages-sandbox' # Required
+      #     workload_identity_provider: 'projects/394529523748/locations/global/workloadIdentityPools/gha-worker/providers/github-actions'
+      #     service_account: 'gha-worker@dp-artifacts-sandbox.iam.gserviceaccount.com'
 
   #     - name: Sync Dev with Upstream
   #       run: |
