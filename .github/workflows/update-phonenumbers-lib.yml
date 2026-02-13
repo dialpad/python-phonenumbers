@@ -50,7 +50,8 @@ jobs:
           REGISTRY_VERSION=$(gcloud artifacts versions list \
             --package=dialpad-phonenumbers \
             --repository=python-packages-sandbox \
-            --location=us-central1 \
+            --location=us \
+            --project=dp-artifacts-sandbox \
             --format='value(name)' \
             --sort-by='~create_time' | head -n 1 | awk -F/ '{print $NF}' | cut -d. -f1-3)
 
