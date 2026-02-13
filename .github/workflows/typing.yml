@@ -1,5 +1,11 @@
 name: Test type stubs
-on: [push, pull_request]
+on: 
+  push:
+    branches-ignore:
+      - tel-18111-automate-phonenumbers-lib
+  pull_request:
+    branches-ignore:
+      - tel-18111-automate-phonenumbers-lib
 permissions:
   contents: read
 

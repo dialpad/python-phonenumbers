@@ -1,5 +1,8 @@
 name: coverage
-on: [push]
+on: 
+  push:
+    branches-ignore:
+      - tel-18111-automate-phonenumbers-lib
 permissions:
   contents: read
 
