@@ -16,6 +16,8 @@ jobs:
       contents: read
       id-token: write
 
+    env: 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     # env:
     #   DEPLOYER_EMAIL_ARG: ''
     steps:
