@@ -16,11 +16,14 @@ jobs:
       contents: read
       id-token: write
 
-    env: 
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     # env:
     #   DEPLOYER_EMAIL_ARG: ''
     steps:
+      - name: Upload coverage to Coveralls
+        if: false  # Skip for testing
+        run: coveralls
+
       - name: Checkout Dialpad Repo
         uses: actions/checkout@v4
         with:
