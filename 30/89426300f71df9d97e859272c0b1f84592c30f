@@ -1,0 +1,21 @@
+python/dialpad_tests.py
+  s_3c9ccf3e63022b::t_9e772fe49a079e 29
+python/phonenumbers/data/region_DE.py
+  s_3c9ccf3e63022b::t_e7a215c2b4e281 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3089426300f71df9d97e859272c0b1f84592c30f",
+  "prompts": {},
+  "sessions": {
+    "s_3c9ccf3e63022b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8d296ad-553d-43d8-970d-d039812e2669",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Armen Babikyan <armen@dialpad.com>"
+    }
+  }
+}
